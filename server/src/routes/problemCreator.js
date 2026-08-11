@@ -12,8 +12,8 @@ problemRouter.put("/update/:id",adminMiddleware,updateProblem);
 problemRouter.delete("/delete/:id",adminMiddleware,deleteProblem);
 
 // for user
-problemRouter.get("/problemById/:id",userMiddleware,getProblemByID);
-problemRouter.get("/getAllProblem",userMiddleware,getAllProblem);
+problemRouter.get("/problemById/:id",getProblemByID);
+problemRouter.get("/getAllProblem",getAllProblem);
 problemRouter.get("/problemSolvedByUser",userMiddleware,problemSolvedByUser);  
 problemRouter.get("/submittedProblem/:pid",userMiddleware,submittedProblem)
 
