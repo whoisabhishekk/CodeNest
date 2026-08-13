@@ -4,6 +4,16 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 const Submission = require("../models/submission")
 
+// Cookie options — production mein cross-domain (Netlify↔Render) ke liye
+// sameSite: 'none' + secure: true zaroori hai
+const isProduction = process.env.NODE_ENV === 'production';
+const cookieOptions = {
+    maxAge: 1000 * 60 * 60, // 1 hour
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+};
+
 // register function
 const register = async (req,res)=>{
     
@@ -24,7 +34,7 @@ const register = async (req,res)=>{
         }
 
         const token = jwt.sign({role :user.role,_id:user._id,emailId:user.emailId},process.env.JWT_KEY,{expiresIn:60*60});
-        res.cookie("token",token,{maxAge:1000*60*60,httpOnly:true,secure:false});
+        res.cookie("token", token, cookieOptions);
         
         res.status(201).json({
             message:"User Registered",
@@ -65,7 +75,7 @@ const login = async(req,res)=>{
         }
         
         const token = jwt.sign({_id:user._id,emailId:user.emailId , role:user.role},process.env.JWT_KEY,{expiresIn:60*60});
-        res.cookie("token",token,{maxAge:1000*60*60,httpOnly:true,secure:false});
+        res.cookie("token", token, cookieOptions);
         
         res.status(201).json({
             message:"Logged in Successfully",
@@ -83,7 +93,7 @@ const login = async(req,res)=>{
 // logout function
 const logout = async(req,res) =>{
     try{
-        res.clearCookie("token");
+        res.clearCookie("token", { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'none' : 'lax' });
         res.status(200).json({
             message:"Logged out successfully"
         })
@@ -107,7 +117,7 @@ const adminRegister=async(req,res)=>{
         const user = await User.create(req.body);
 
         const token = jwt.sign({role :user.role,_id:user._id,emailId:user.emailId},process.env.JWT_KEY,{expiresIn:60*60});
-        res.cookie("token",token,{maxAge:1000*60*60,httpOnly:true,secure:true});
+        res.cookie("token", token, cookieOptions);
         
         res.status(201).json({
             message:"User Registered",
@@ -131,7 +141,7 @@ const deleteProfile = async(req,res)=>{
         await Submission.deleteMany({userId:userId});
 
         // Cookie clear karo taaki deleted user ka token invalid ho jaye
-        res.clearCookie("token");
+        res.clearCookie("token", { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'none' : 'lax' });
         
         res.status(200).json({
             message:"Profile deleted successfully"
