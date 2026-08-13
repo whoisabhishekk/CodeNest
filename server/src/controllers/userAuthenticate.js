@@ -16,13 +16,19 @@ const register = async (req,res)=>{
         req.body.password = await bcrypt.hash(password,10);
 
         const user = await User.create(req.body);
+        const reply={
+            firstName:user.firstName,
+            lastName:user.lastName,
+            emailId:user.emailId,
+            _id:user._id    
+        }
 
         const token = jwt.sign({role :user.role,_id:user._id,emailId:user.emailId},process.env.JWT_KEY,{expiresIn:60*60});
-        res.cookie("token",token,{maxAge:1000*60*60,httpOnly:true,secure:true});
+        res.cookie("token",token,{maxAge:1000*60*60,httpOnly:true,secure:false});
         
         res.status(201).json({
             message:"User Registered",
-            token
+            user:user
         });
 
     } catch(error){
@@ -50,13 +56,20 @@ const login = async(req,res)=>{
         
         if(!match)
             throw new Error("Invalid Credentials")
+
+        const reply={
+            firstName:user.firstName,
+            lastName:user.lastName,
+            emailId:user.emailId,
+            _id:user._id
+        }
         
         const token = jwt.sign({_id:user._id,emailId:user.emailId , role:user.role},process.env.JWT_KEY,{expiresIn:60*60});
-        res.cookie("token",token,{maxAge:1000*60*60,httpOnly:true,secure:true});
-
-        res.status(200).json({
+        res.cookie("token",token,{maxAge:1000*60*60,httpOnly:true,secure:false});
+        
+        res.status(201).json({
             message:"Logged in Successfully",
-            token
+            user:user
         })
         
     } catch(error){
