@@ -175,4 +175,21 @@ const runCode = async (req, res) => {
     }
 };
 
-module.exports = { submitCode, runCode };
+const getUserSubmissions = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const submissions = await Submission.find({ userId })
+            .populate("problemId", "title difficulty tags")
+            .sort({ createdAt: -1 })
+            .limit(50);
+
+        return res.status(200).json({
+            message: "Submissions fetched successfully",
+            submissions
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Internal server error", err: err.message });
+    }
+};
+
+module.exports = { submitCode, runCode, getUserSubmissions };

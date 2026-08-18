@@ -124,11 +124,20 @@ const Navbar = () => {
                                         fontFamily: "'Geist', sans-serif",
                                         fontWeight: 700,
                                         fontSize: '14px',
+                                        overflow: 'hidden',
                                     }}
                                     onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 0 2px var(--primary)'}
                                     onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 0 2px transparent'}
                                 >
-                                    {user.firstName ? user.firstName.charAt(0).toUpperCase() : "U"}
+                                    {user.avatarUrl ? (
+                                        <img 
+                                            src={user.avatarUrl} 
+                                            alt="Profile" 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        />
+                                    ) : (
+                                        user.firstName ? user.firstName.charAt(0).toUpperCase() : "U"
+                                    )}
                                 </div>
                                 <ul 
                                     tabIndex={0} 

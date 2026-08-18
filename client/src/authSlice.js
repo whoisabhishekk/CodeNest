@@ -33,6 +33,13 @@ const authSlice = createSlice({
             state.loading = false;
         },
 
+        // Jab profile picture update ho
+        updateAvatar: (state, action) => {
+            if (state.user) {
+                state.user.avatarUrl = action.payload;
+            }
+        },
+
         // Jab logout ho → sab saaf karo
         clearUser: (state) => {
             state.user = null;
@@ -43,6 +50,6 @@ const authSlice = createSlice({
 });
 
 // Ye actions export karo — inhe component me dispatch karoge
-export const { setLoading, setUser, setError, clearUser } = authSlice.actions;
+export const { setLoading, setUser, setError, clearUser, updateAvatar } = authSlice.actions;
 
 export default authSlice.reducer;
