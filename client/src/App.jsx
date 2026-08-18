@@ -14,6 +14,7 @@ import ProblemsPage from "./pages/ProblemsPage";
 import ProblemSolver from "./pages/ProblemSolver";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
+import PremiumPage from "./pages/PremiumPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -61,6 +62,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/problems" element={<ProblemsPage />} />
+        <Route path="/premium" element={<PremiumPage />} />
         
         {/* Protected Routes (Sirf login hone ke baad dikhenge) */}
         <Route path="/problem/:id" element={

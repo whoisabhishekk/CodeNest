@@ -58,6 +58,7 @@ const Navbar = () => {
                     <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                         {[
                             { label: 'Problems', to: '/problems' },
+                            { label: 'Premium', to: '/premium' },
                             ...(user?.role === 'admin' ? [{ label: 'Admin', to: '/admin' }] : []),
                         ].map((item) => (
                             <Link
@@ -226,23 +227,6 @@ const Navbar = () => {
                     ) : (
                         /* ─── Logged Out View ─── */
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <Link 
-                                to="/login"
-                                style={{
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    fontSize: '12px',
-                                    letterSpacing: '0.05em',
-                                    fontWeight: 500,
-                                    color: 'var(--primary)',
-                                    textDecoration: 'none',
-                                    padding: '8px 16px',
-                                    transition: 'color 0.2s',
-                                }}
-                                onMouseEnter={(e) => e.target.style.color = 'var(--on-surface)'}
-                                onMouseLeave={(e) => e.target.style.color = 'var(--primary)'}
-                            >
-                                Premium
-                            </Link>
                             <Link 
                                 to="/login"
                                 style={{
