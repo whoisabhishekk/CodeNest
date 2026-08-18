@@ -43,6 +43,14 @@ const userSchema = new mongoose.Schema({
     avatarUrl:{
         type:String,
         default:""
+    },
+    bio:{
+        type:String,
+        default:""
+    },
+    country:{
+        type:String,
+        default:"India"
     }
 } , {timestamps:true} );
 

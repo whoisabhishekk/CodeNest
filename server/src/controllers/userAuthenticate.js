@@ -193,4 +193,33 @@ const uploadAvatar = async (req, res) => {
     }
 };
 
-module.exports = {register,login,logout,adminRegister,deleteProfile,uploadAvatar}
+const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { firstName, lastName, bio, country } = req.body;
+
+        const updateData = {};
+        if (firstName !== undefined) updateData.firstName = firstName.trim();
+        if (lastName !== undefined) updateData.lastName = lastName.trim();
+        if (bio !== undefined) updateData.bio = bio.trim();
+        if (country !== undefined) updateData.country = country.trim();
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            updateData,
+            { new: true, runValidators: true }
+        ).select("-password");
+
+        return res.status(200).json({
+            message: "Profile updated successfully",
+            user: updatedUser
+        });
+    } catch (error) {
+        return res.status(400).json({
+            message: "Failed to update profile",
+            error: error.message
+        });
+    }
+};
+
+module.exports = {register,login,logout,adminRegister,deleteProfile,uploadAvatar,updateProfile}

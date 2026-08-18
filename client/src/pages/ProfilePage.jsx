@@ -2,37 +2,8 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router';
 import axiosClient from '../utils/axiosClient';
-import { updateAvatar } from '../authSlice';
+import { updateAvatar, updateUserProfile } from '../authSlice';
 import DifficultyBadge from '../components/DifficultyBadge';
-
-const MOCK_ALL_PROBLEMS = [
-    { _id: 'p1', title: 'Two Sum', difficulty: 'Easy', tags: ['Array', 'Hash Table'] },
-    { _id: 'p2', title: 'Add Two Numbers', difficulty: 'Medium', tags: ['Linked List', 'Math'] },
-    { _id: 'p3', title: 'Longest Substring Without Repeating Characters', difficulty: 'Medium', tags: ['Sliding Window', 'Hash Table'] },
-    { _id: 'p4', title: 'Median of Two Sorted Arrays', difficulty: 'Hard', tags: ['Binary Search', 'Array'] },
-    { _id: 'p5', title: 'Trapping Rain Water', difficulty: 'Hard', tags: ['Two Pointers', 'Stack'] },
-    { _id: 'p6', title: 'Reverse Linked List', difficulty: 'Easy', tags: ['Linked List', 'Recursion'] },
-    { _id: 'p7', title: 'LRU Cache', difficulty: 'Hard', tags: ['Hash Table', 'Design'] },
-    { _id: 'p8', title: 'Valid Parentheses', difficulty: 'Easy', tags: ['Stack', 'String'] },
-];
-
-const MOCK_SOLVED_PROBLEMS = [
-    { _id: 'p1', title: 'Two Sum', difficulty: 'Easy', tags: ['Array', 'Hash Table'] },
-    { _id: 'p2', title: 'Add Two Numbers', difficulty: 'Medium', tags: ['Linked List', 'Math'] },
-    { _id: 'p3', title: 'Longest Substring Without Repeating Characters', difficulty: 'Medium', tags: ['Sliding Window', 'Hash Table'] },
-    { _id: 'p4', title: 'Median of Two Sorted Arrays', difficulty: 'Hard', tags: ['Binary Search', 'Array'] },
-    { _id: 'p5', title: 'Trapping Rain Water', difficulty: 'Hard', tags: ['Two Pointers', 'Stack'] },
-    { _id: 'p6', title: 'Reverse Linked List', difficulty: 'Easy', tags: ['Linked List', 'Recursion'] },
-];
-
-const MOCK_SUBMISSIONS = [
-    { _id: 's1', problemId: { _id: 'p1', title: 'Two Sum' }, status: 'accepted', runtime: 12, memory: 41.8, language: 'javascript', createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString() },
-    { _id: 's2', problemId: { _id: 'p2', title: 'Add Two Numbers' }, status: 'accepted', runtime: 48, memory: 44.2, language: 'javascript', createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString() },
-    { _id: 's3', problemId: { _id: 'p3', title: 'Longest Substring Without Repeating Characters' }, status: 'accepted', runtime: 32, memory: 43.1, language: 'javascript', createdAt: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString() },
-    { _id: 's4', problemId: { _id: 'p4', title: 'Median of Two Sorted Arrays' }, status: 'accepted', runtime: 64, memory: 46.5, language: 'javascript', createdAt: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString() },
-    { _id: 's5', problemId: { _id: 'p5', title: 'Trapping Rain Water' }, status: 'accepted', runtime: 52, memory: 45.0, language: 'javascript', createdAt: new Date(Date.now() - 6 * 24 * 3600 * 1000).toISOString() },
-    { _id: 's6', problemId: { _id: 'p6', title: 'Reverse Linked List' }, status: 'accepted', runtime: 8, memory: 40.2, language: 'javascript', createdAt: new Date(Date.now() - 8 * 24 * 3600 * 1000).toISOString() },
-];
 
 // Helper to format dates nicely
 const formatTimeAgo = (dateStr) => {
@@ -59,8 +30,20 @@ const ProfilePage = () => {
     const [allProblems, setAllProblems] = useState([]);
     const [submissions, setSubmissions] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // Avatar upload state
     const [isUploading, setIsUploading] = useState(false);
     const [uploadMessage, setUploadMessage] = useState(null);
+
+    // Edit Profile Modal State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [editFormData, setEditFormData] = useState({
+        firstName: '',
+        lastName: '',
+        bio: '',
+        country: ''
+    });
 
     useEffect(() => {
         const fetchRealTimeData = async () => {
@@ -74,8 +57,6 @@ const ProfilePage = () => {
                 // 1. Process Solved Problems
                 if (solvedRes.status === 'fulfilled' && solvedRes.value?.data?.problems) {
                     setSolvedProblems(solvedRes.value.data.problems);
-                } else if (localStorage.getItem('isDemoSession') === 'true') {
-                    setSolvedProblems(MOCK_SOLVED_PROBLEMS);
                 } else {
                     setSolvedProblems([]);
                 }
@@ -83,8 +64,6 @@ const ProfilePage = () => {
                 // 2. Process All Problems
                 if (allRes.status === 'fulfilled' && allRes.value?.data?.problem) {
                     setAllProblems(allRes.value.data.problem);
-                } else if (localStorage.getItem('isDemoSession') === 'true') {
-                    setAllProblems(MOCK_ALL_PROBLEMS);
                 } else {
                     setAllProblems([]);
                 }
@@ -92,17 +71,11 @@ const ProfilePage = () => {
                 // 3. Process Submissions
                 if (subRes.status === 'fulfilled' && subRes.value?.data?.submissions) {
                     setSubmissions(subRes.value.data.submissions);
-                } else if (localStorage.getItem('isDemoSession') === 'true') {
-                    setSubmissions(MOCK_SUBMISSIONS);
                 } else {
                     setSubmissions([]);
                 }
             } catch (err) {
-                if (localStorage.getItem('isDemoSession') === 'true') {
-                    setSolvedProblems(MOCK_SOLVED_PROBLEMS);
-                    setAllProblems(MOCK_ALL_PROBLEMS);
-                    setSubmissions(MOCK_SUBMISSIONS);
-                }
+                console.error("Failed to load user profile statistics:", err);
             } finally {
                 setLoading(false);
             }
@@ -112,6 +85,49 @@ const ProfilePage = () => {
             fetchRealTimeData();
         }
     }, [user]);
+
+    // Handle Open Edit Profile Modal
+    const handleOpenEditModal = () => {
+        setEditFormData({
+            firstName: user?.firstName || '',
+            lastName: user?.lastName || '',
+            bio: user?.bio || '',
+            country: user?.country || 'India'
+        });
+        setIsEditModalOpen(true);
+    };
+
+    // Handle Save Profile
+    const handleSaveProfile = async (e) => {
+        e.preventDefault();
+        setIsSavingProfile(true);
+
+        try {
+            // Update Redux state immediately for instant feedback
+            dispatch(updateUserProfile({
+                firstName: editFormData.firstName,
+                lastName: editFormData.lastName,
+                bio: editFormData.bio,
+                country: editFormData.country
+            }));
+
+            // Sync with backend API
+            await axiosClient.put('/user/profile', {
+                firstName: editFormData.firstName,
+                lastName: editFormData.lastName,
+                bio: editFormData.bio,
+                country: editFormData.country
+            });
+
+            setUploadMessage({ type: 'success', text: 'Profile updated successfully!' });
+        } catch (err) {
+            setUploadMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update profile' });
+        } finally {
+            setIsSavingProfile(false);
+            setIsEditModalOpen(false);
+            setTimeout(() => setUploadMessage(null), 4000);
+        }
+    };
 
     // Handle Profile Picture File Selection
     const handleFileChange = async (e) => {
@@ -138,7 +154,7 @@ const ProfilePage = () => {
         // Upload to Backend (Cloudinary)
         try {
             setIsUploading(true);
-            setUploadMessage({ type: 'info', text: 'Uploading avatar...' });
+            setUploadMessage({ type: 'info', text: 'Uploading avatar to Cloudinary...' });
 
             const formData = new FormData();
             formData.append('avatar', file);
@@ -154,8 +170,7 @@ const ProfilePage = () => {
                 setUploadMessage({ type: 'success', text: 'Profile picture updated successfully!' });
             }
         } catch (err) {
-            console.warn('Backend avatar upload skipped or failed (offline/demo mode). Local avatar preview active.');
-            setUploadMessage({ type: 'info', text: 'Profile picture updated (Local Demo Mode)' });
+            setUploadMessage({ type: 'error', text: err.response?.data?.message || 'Failed to upload picture' });
         } finally {
             setIsUploading(false);
             setTimeout(() => setUploadMessage(null), 4000);
@@ -188,9 +203,6 @@ const ProfilePage = () => {
     // 3. Real-time Streak Calculation (consecutive active days)
     const activeStreak = useMemo(() => {
         if (submissions.length === 0 && solvedProblems.length === 0) return 0;
-        if (localStorage.getItem('isDemoSession') === 'true') return 14;
-
-        // Group submissions by unique date (YYYY-MM-DD)
         const uniqueDates = new Set(
             submissions.map(s => new Date(s.createdAt).toISOString().split('T')[0])
         );
@@ -231,7 +243,7 @@ const ProfilePage = () => {
         if (user?.createdAt) {
             return new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         }
-        return 'August 2024';
+        return 'Member';
     }, [user]);
 
     if (!user) return null;
@@ -363,7 +375,7 @@ const ProfilePage = () => {
                                     style={{ display: 'none' }} 
                                 />
 
-                                {/* Upload Status Notification */}
+                                {/* Upload / Update Status Notification */}
                                 {uploadMessage && (
                                     <div style={{
                                         fontSize: '11px',
@@ -415,7 +427,7 @@ const ProfilePage = () => {
                                     marginBottom: '20px',
                                     padding: '0 4px'
                                 }}>
-                                    {user.bio || "Full Stack Engineer & Competitive Programmer | Solving 1 problem a day 🚀"}
+                                    {user.bio || "No bio added yet. Click 'Edit Profile' to introduce yourself!"}
                                 </p>
 
                                 <div style={{ height: '1px', background: 'rgba(84, 68, 52, 0.2)', margin: '16px 0' }} />
@@ -446,6 +458,43 @@ const ProfilePage = () => {
                                         <span>Joined {joinedDateFormatted}</span>
                                     </div>
                                 </div>
+
+                                {/* Edit Profile Button */}
+                                <button
+                                    onClick={handleOpenEditModal}
+                                    style={{
+                                        width: '100%',
+                                        marginTop: '20px',
+                                        padding: '10px 16px',
+                                        borderRadius: '8px',
+                                        background: 'rgba(255, 161, 22, 0.08)',
+                                        border: '1px solid rgba(255, 161, 22, 0.3)',
+                                        color: 'var(--primary)',
+                                        fontFamily: "'Geist', sans-serif",
+                                        fontWeight: 600,
+                                        fontSize: '13px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255, 161, 22, 0.18)';
+                                        e.currentTarget.style.borderColor = 'var(--primary)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255, 161, 22, 0.08)';
+                                        e.currentTarget.style.borderColor = 'rgba(255, 161, 22, 0.3)';
+                                    }}
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                    </svg>
+                                    <span>Edit Profile</span>
+                                </button>
                             </div>
                         </div>
 
@@ -791,6 +840,180 @@ const ProfilePage = () => {
                     </div>
                 </div>
             </main>
+
+            {/* ─── Edit Profile Modal ─── */}
+            {isEditModalOpen && (
+                <div
+                    onClick={() => setIsEditModalOpen(false)}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 100,
+                        background: 'rgba(0, 0, 0, 0.75)',
+                        backdropFilter: 'blur(8px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '24px',
+                        animation: 'fadeIn 0.2s ease-out'
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="glass-card"
+                        style={{
+                            maxWidth: '480px',
+                            width: '100%',
+                            padding: '32px',
+                            borderRadius: '16px',
+                            position: 'relative',
+                            border: '1px solid rgba(84, 68, 52, 0.3)',
+                            boxShadow: '0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 161, 22, 0.1)',
+                            background: 'var(--surface-container-low)'
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <h3 style={{
+                                fontFamily: "'Geist', sans-serif",
+                                fontSize: '20px',
+                                fontWeight: 700,
+                                color: 'var(--on-surface)'
+                            }}>
+                                Edit Profile Details
+                            </h3>
+                            <button
+                                onClick={() => setIsEditModalOpen(false)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--outline)',
+                                    cursor: 'pointer',
+                                    padding: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                            {/* First Name & Last Name */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                <div>
+                                    <label className="dm-label">First Name</label>
+                                    <input
+                                        type="text"
+                                        value={editFormData.firstName}
+                                        onChange={(e) => setEditFormData({ ...editFormData, firstName: e.target.value })}
+                                        className="dm-input"
+                                        style={{ paddingLeft: '14px' }}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="dm-label">Last Name</label>
+                                    <input
+                                        type="text"
+                                        value={editFormData.lastName}
+                                        onChange={(e) => setEditFormData({ ...editFormData, lastName: e.target.value })}
+                                        className="dm-input"
+                                        style={{ paddingLeft: '14px' }}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Email (Read only info) */}
+                            <div>
+                                <label className="dm-label">Email Address (Registered)</label>
+                                <input
+                                    type="email"
+                                    value={user.emailId}
+                                    disabled
+                                    className="dm-input"
+                                    style={{ paddingLeft: '14px', opacity: 0.6, cursor: 'not-allowed' }}
+                                />
+                            </div>
+
+                            {/* Location / Country */}
+                            <div>
+                                <label className="dm-label">Location / Country</label>
+                                <input
+                                    type="text"
+                                    value={editFormData.country}
+                                    onChange={(e) => setEditFormData({ ...editFormData, country: e.target.value })}
+                                    placeholder="e.g. India, San Francisco, CA"
+                                    className="dm-input"
+                                    style={{ paddingLeft: '14px' }}
+                                />
+                            </div>
+
+                            {/* Bio */}
+                            <div>
+                                <label className="dm-label">Bio / Tagline</label>
+                                <textarea
+                                    value={editFormData.bio}
+                                    onChange={(e) => setEditFormData({ ...editFormData, bio: e.target.value })}
+                                    placeholder="Write a brief intro about yourself..."
+                                    rows={3}
+                                    className="dm-input"
+                                    style={{ padding: '10px 14px', resize: 'vertical', minHeight: '80px' }}
+                                    maxLength={200}
+                                />
+                                <div style={{ textAlign: 'right', fontSize: '11px', color: 'var(--outline)', marginTop: '4px', fontFamily: "'JetBrains Mono', monospace" }}>
+                                    {editFormData.bio.length} / 200
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditModalOpen(false)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '10px',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(84, 68, 52, 0.3)',
+                                        background: 'transparent',
+                                        color: 'var(--on-surface-variant)',
+                                        fontFamily: "'Geist', sans-serif",
+                                        fontWeight: 600,
+                                        fontSize: '14px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSavingProfile}
+                                    className="dm-btn-primary"
+                                    style={{
+                                        flex: 1,
+                                        padding: '10px',
+                                        fontSize: '14px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px'
+                                    }}
+                                >
+                                    {isSavingProfile ? (
+                                        <div className="dm-spinner" style={{ width: '18px', height: '18px' }} />
+                                    ) : (
+                                        'Save Changes'
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* Footer */}
             <footer style={{

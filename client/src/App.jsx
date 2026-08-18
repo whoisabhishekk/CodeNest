@@ -29,22 +29,7 @@ function App() {
           dispatch(setUser(response.data.user));
         }
       } catch (error) {
-        if (localStorage.getItem('isDemoSession') === 'true') {
-          dispatch(setUser({
-            _id: "demo_user_12345",
-            firstName: "Aditya",
-            lastName: "Aryan",
-            emailId: "aditya@codenest.com",
-            role: "user",
-            age: 24,
-            bio: "Full Stack Engineer & Competitive Programmer | Solving 1 problem a day 🚀",
-            rank: "Top 5% (1,842 Rating)",
-            country: "India",
-            joinedDate: "August 2024"
-          }));
-        } else {
-          dispatch(clearUser());
-        }
+        dispatch(clearUser());
       } finally {
         setIsCheckingAuth(false);
       }
