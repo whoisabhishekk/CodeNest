@@ -58,6 +58,7 @@ const Navbar = () => {
                     <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                         {[
                             { label: 'Problems', to: '/problems' },
+                            { label: 'Premium', to: '/premium' },
                             ...(user?.role === 'admin' ? [{ label: 'Admin', to: '/admin' }] : []),
                         ].map((item) => (
                             <Link
@@ -123,11 +124,20 @@ const Navbar = () => {
                                         fontFamily: "'Geist', sans-serif",
                                         fontWeight: 700,
                                         fontSize: '14px',
+                                        overflow: 'hidden',
                                     }}
                                     onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 0 2px var(--primary)'}
                                     onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 0 2px transparent'}
                                 >
-                                    {user.firstName ? user.firstName.charAt(0).toUpperCase() : "U"}
+                                    {user.avatarUrl ? (
+                                        <img 
+                                            src={user.avatarUrl} 
+                                            alt="Profile" 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        />
+                                    ) : (
+                                        user.firstName ? user.firstName.charAt(0).toUpperCase() : "U"
+                                    )}
                                 </div>
                                 <ul 
                                     tabIndex={0} 
@@ -226,23 +236,6 @@ const Navbar = () => {
                     ) : (
                         /* ─── Logged Out View ─── */
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <Link 
-                                to="/login"
-                                style={{
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    fontSize: '12px',
-                                    letterSpacing: '0.05em',
-                                    fontWeight: 500,
-                                    color: 'var(--primary)',
-                                    textDecoration: 'none',
-                                    padding: '8px 16px',
-                                    transition: 'color 0.2s',
-                                }}
-                                onMouseEnter={(e) => e.target.style.color = 'var(--on-surface)'}
-                                onMouseLeave={(e) => e.target.style.color = 'var(--primary)'}
-                            >
-                                Premium
-                            </Link>
                             <Link 
                                 to="/login"
                                 style={{

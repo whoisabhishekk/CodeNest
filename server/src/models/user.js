@@ -39,6 +39,18 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String,
         required:true
+    },
+    avatarUrl:{
+        type:String,
+        default:""
+    },
+    bio:{
+        type:String,
+        default:""
+    },
+    country:{
+        type:String,
+        default:"India"
     }
 } , {timestamps:true} );
 

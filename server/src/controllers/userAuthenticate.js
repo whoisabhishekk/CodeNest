@@ -154,4 +154,72 @@ const deleteProfile = async(req,res)=>{
     }
 }
 
-module.exports = {register,login,logout,adminRegister,deleteProfile}
+const { uploadToCloudinary } = require("../config/cloudinary");
+
+const uploadAvatar = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "No image file provided" });
+        }
+
+        const userId = req.user._id;
+
+        // Check if Cloudinary keys are configured
+        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY) {
+            return res.status(500).json({
+                message: "Cloudinary credentials not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in .env."
+            });
+        }
+
+        const uploadResult = await uploadToCloudinary(req.file.buffer);
+        const avatarUrl = uploadResult.secure_url;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { avatarUrl },
+            { new: true }
+        ).select("-password");
+
+        return res.status(200).json({
+            message: "Avatar uploaded successfully",
+            avatarUrl,
+            user: updatedUser
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Failed to upload avatar",
+            error: error.message
+        });
+    }
+};
+
+const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { firstName, lastName, bio, country } = req.body;
+
+        const updateData = {};
+        if (firstName !== undefined) updateData.firstName = firstName.trim();
+        if (lastName !== undefined) updateData.lastName = lastName.trim();
+        if (bio !== undefined) updateData.bio = bio.trim();
+        if (country !== undefined) updateData.country = country.trim();
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            updateData,
+            { new: true, runValidators: true }
+        ).select("-password");
+
+        return res.status(200).json({
+            message: "Profile updated successfully",
+            user: updatedUser
+        });
+    } catch (error) {
+        return res.status(400).json({
+            message: "Failed to update profile",
+            error: error.message
+        });
+    }
+};
+
+module.exports = {register,login,logout,adminRegister,deleteProfile,uploadAvatar,updateProfile}
